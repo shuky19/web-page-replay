@@ -129,7 +129,7 @@ def AddWebProxy(server_manager, options, host, real_dns_lookup, http_archive):
   if options.ssl:
     if options.should_generate_certs:
       server_manager.Append(
-          httpproxy.HttpsProxyServer, archive_fetch, custom_handlers,
+          httpproxy.HttpsProxyServer, real_dns_lookup, archive_fetch, custom_handlers,
           options.https_root_ca_cert_path, host=host, port=options.ssl_port,
           use_delays=options.use_server_delay, **options.shaping_http)
     else:

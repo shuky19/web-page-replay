@@ -365,9 +365,10 @@ class HttpProxyServer(SocketServer.ThreadingMixIn,
 class HttpsProxyServer(HttpProxyServer):
   """SSL server that generates certs for each host."""
 
-  def __init__(self, http_archive_fetch, custom_handlers,
+  def __init__(self, real_dns_lookup, http_archive_fetch, custom_handlers,
                https_root_ca_cert_path, **kwargs):
     self.ca_cert_path = https_root_ca_cert_path
+    self._real_dns_lookup = real_dns_lookup
     self.HANDLER = sslproxy.wrap_handler(HttpArchiveHandler)
     HttpProxyServer.__init__(self, http_archive_fetch, custom_handlers,
                              is_ssl=True, protocol='HTTPS', **kwargs)
@@ -387,7 +388,8 @@ class HttpsProxyServer(HttpProxyServer):
     if host in self._host_to_cert_map:
       return self._host_to_cert_map[host]
 
-    server_cert = self.http_archive_fetch.http_archive.get_server_cert(host)
+    host_ip = self._real_dns_lookup(host)
+    server_cert = self.http_archive_fetch.http_archive.get_server_cert(host_ip)
     if server_cert in self._server_cert_to_cert_map:
       cert = self._server_cert_to_cert_map[server_cert]
       self._host_to_cert_map[host] = cert
